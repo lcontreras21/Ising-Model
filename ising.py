@@ -2,6 +2,8 @@
 # Ising Imeplementation for PHYS 303: Statistical Mechancis
 import time
 import random
+import matplotlib
+matplotlib.use('TKAgg')
 import matplotlib.pyplot as plt
 from math import exp
 from collections import Counter
@@ -22,14 +24,12 @@ class Ising_Model:
 
 		# Calculate total energy then add Ediff to it after each iteratation
 		U = self.totalU()
-		print("Initial U", U, flush=True, end=" ")
+#		print("Initial U", U, flush=True, end=" ")
 
 		totalM = []
 		amount = 100 * (self.size + 1)**2
 
 		for t in range(amount): # visits each node 100 times
-			#if t % 100 == 0:
-				#print("ON", t, "of", amount,  flush=True)
 			i = int(random.random() * self.size)
 			j = int(random.random() * self.size)
 			Ediff = self.deltaU(i, j)
@@ -48,10 +48,10 @@ class Ising_Model:
 			totalM.append(runMTotal)
 
 
-		print("Final U", U, flush=True)
-		print("Average Magnetization:", sum(totalM)/len(totalM), flush=True)
+#		print("Final U", U, flush=True)
+#		print("Average Magnetization:", sum(totalM)/len(totalM), flush=True)
 		Mcounts = dict(Counter(totalM))
-		print("Most Likely Magnetization:", max(Mcounts.items(), key=itemgetter(1))[0], flush=True)
+#		print("Most Likely Magnetization:", max(Mcounts.items(), key=itemgetter(1))[0], flush=True)
 		self.M_plot.cla()
 		self.M_plot.bar(list(Mcounts.keys()), Mcounts.values())
 		self.fig.canvas.draw()
@@ -128,43 +128,45 @@ class Ising_Model:
 					right = self.i_table[i][j+1]
 
 				neighbor += top + bottom + left + right
-			U += neighbor
+			U += -1 * self.j * self.i_table[i][j] * neighbor - (self.h * neighbor)
 		return U
 
 def main():
-	plt.ion()
 	print("Starting Ising Model", flush=True)
-	size = 5
+	size = 20 
 	h = 0
-	j = -1
-	# make T and size command line arguments
+	j = 1
 
 	avgUList = []
 	mostLikelyMList = []
 	TList = []
+	plt.ion()
 
-	for i in range(28, 0, -1):
-		T = 4 - i*0.125
+	#for i in range(100, 0, -1):
+	for i in [2.4]:
+		#T = 10 - i*(9/100)
+		T = i 
+		print("On temperature:", T," " * 20, flush=True, end="\r")
 		i_table = Ising_Model(size, T, j, h)
 		avgU, mostLikelyM = i_table.iteration()
 		TList.append(T)
 		avgUList.append(avgU)
 		mostLikelyMList.append(mostLikelyM)
-	
-	#plt.ioff()
-	dataFig = plt.figure()
-	print(TList, avgUList, mostLikelyMList)
+	print("Finished Ising Model", flush=True)
+'''	
+	dataFig = plt.figure(1)
 	UvsT = dataFig.add_subplot(211)
 	UvsT.scatter(TList, avgUList)
 	UvsT.title.set_text("Average Energy vs Temperature")
 	MvsT = dataFig.add_subplot(212)
 	MvsT.scatter(TList, mostLikelyMList)
 	MvsT.title.set_text("Most Likely Magnetization vs Temperature")
+	dataFig.subplots_adjust(hspace=0.5)
 	dataFig.canvas.draw()
-	time.sleep(30)
-   
+	dataFig.suptitle(str(size) + "x" + str(size) + " Ising Model", fontsize=16)
+	plt.show()
 	print("Finished Ising Model", flush=True)
+'''
 if __name__ == "__main__":
 	main()
-	time.sleep(30)
 
